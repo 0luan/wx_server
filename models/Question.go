@@ -14,6 +14,7 @@ type Question struct {
 	Category_id int `json:"category_id"`
 	Title string	`json:"title"`
 	Content string	`json:"content,omitempty"`
+	Thumb string `json:"thumb,omitempty"`
 }
 
 func init() {

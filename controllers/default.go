@@ -20,31 +20,66 @@ type Respond struct {
 	QuestionRows []models.Question `json:"question_list,omitempty"`
 }
 
-func (c *MainController) Get() {
+func (c *MainController) Post() {
+	var res Respond
 	o := orm.NewOrm()
 	o.Using("default")
 
-	var q models.Question
-	q.Category_id = 5
-	q.Title = c.GetString("title")
-	q.Content = c.GetString("content")
-	id, err := o.Insert(&q)
+	op := c.GetString("op")
+	switch op {
+	case "add_category":
+		title := c.GetString("title")
+		if (title != "") {
+			item := models.Category{Title:title}
+			id, err := o.Insert(&item)
+			if (err == nil) {
+				res.State = true
+				res.Id = id
+			} else {
+				res.State = false
+				res.Msg = err.Error()
+			}
+		} else {
+			res.State = false
+			res.Msg = "invalid argument"
+		}
+	case "add":
+		category_id, err := c.GetInt("category_id");
+		if err == nil {
+			var q models.Question
+			q.Category_id = category_id
+			q.Title = c.GetString("title")
+			q.Content = c.GetString("content")
+			q.Thumb = c.GetString("thumb")
+			if (q.Title == "" || q.Content == "" || q.Thumb == "") {
+				res.State = false
+				res.Msg = "invalid argument"
+			} else {
+				id, err := o.Insert(&q)
+				if err == nil {
+					res.State = true
+					res.Id = id
+				} else {
+					res.State = false
+					res.Msg = err.Error()
+				}
+			}
+		} else {
+			res.State = false
+			res.Msg = err.Error()
+		}
+	case "edit":
 
-	if err != nil {
-		beego.Error(err)
-	} else {
-		c.Data["Website"] = id
+	default:
+		res.State = false
+		res.Msg = "invalid argument"
 	}
-	
-	c.Data["Email"] = "astaxie@gmail.com"
-	c.TplName = "index.tpl"
+
+	c.Data["json"] = &res
+	c.ServeJSON()
 }
 
-type ListController struct {
-	beego.Controller
-}
-
-func (c *ListController) Get() {
+func (c *MainController) Get() {
 	var res Respond
 	o := orm.NewOrm()
 	o.Using("default")
@@ -101,55 +136,10 @@ func (c *ListController) Get() {
 			res.State = false
 			res.Msg = "invalid argument"
 		}
-	case "add":
 
-		category_id, err := c.GetInt("category_id");
-		if err == nil {
-			var q models.Question
-			q.Category_id = category_id
-			q.Title = c.GetString("title")
-			q.Content = c.GetString("content")
-			if (q.Title == "" || q.Content == "") {
-				res.State = false
-				res.Msg = "invalid argument"
-			} else {
-				id, err := o.Insert(&q)
-				if err == nil {
-					res.State = true
-					res.Id = id
-				} else {
-					res.State = false
-					res.Msg = err.Error()
-				}
-			}
-		} else {
-			res.State = false
-			res.Msg = err.Error()
-		}
-
-	case "del":
-
-	case "get":
-		id, err := c.GetInt("id")
-		if (err == nil) {
-			var q models.Question
-			q.Id = id;
-			err = o.Read(&q)
-			if (err == nil) {
-				c.Data["json"] = &q
-				c.ServeJSON()
-				return
-			} else {
-				res.State = false
-				res.Msg = err.Error()
-			}
-		} else {
-			res.State = false
-			res.Msg = err.Error()
-		}
-
-	case "edit":
-
+	default:
+		res.State = false
+		res.Msg = "invalid argument"
 	}
 
 	c.Data["json"] = &res
