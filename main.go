@@ -16,20 +16,9 @@ func init() {
 	orm.RegisterDataBase("default", "mysql", db_connect_str, 10)
 }
 
-func createTable() {
-	name := "default"
-	force := false
-	verbose := true
-	err := orm.RunSyncdb(name, force, verbose)
-	if err != nil {
-		beego.Error(err)
-	}
-}
-
 func main() {
 	o := orm.NewOrm()
 	o.Using("default")
-	createTable()
 
 	beego.Run()
 }

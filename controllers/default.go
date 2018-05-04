@@ -27,22 +27,6 @@ func (c *MainController) Post() {
 
 	op := c.GetString("op")
 	switch op {
-	case "add_category":
-		title := c.GetString("title")
-		if (title != "") {
-			item := models.Category{Title:title}
-			id, err := o.Insert(&item)
-			if (err == nil) {
-				res.State = true
-				res.Id = id
-			} else {
-				res.State = false
-				res.Msg = err.Error()
-			}
-		} else {
-			res.State = false
-			res.Msg = "invalid argument"
-		}
 	case "add":
 		category_id, err := c.GetInt("category_id");
 		if err == nil {
@@ -119,11 +103,39 @@ func (c *MainController) Get() {
 					res.Msg = err.Error()
 				}
 			} else {
-
+				res.State = false
+				res.Msg = "invalid argument"
 			}
-
-
 		}
+
+	case "get":
+		id, err := c.GetInt("id");
+		if (err == nil) {
+			var items []models.Question
+			if err == nil {
+				res.State = true
+				res.QuestionRows = items
+				num, err := o.Raw("SELECT id,category_id,title,content FROM question where id = ?", id).QueryRows(&items)
+				if (err == nil && num == 1) {
+					c.Ctx.WriteString(items[0].Content)
+					return;
+				} else {
+					res.State = false
+					if (err == nil) {
+						res.Msg = "no such id"
+					} else {
+						res.Msg = err.Error()
+					}
+				}
+			} else {
+				res.State = false
+				res.Msg = err.Error()
+			}
+		} else {
+			res.State = false
+			res.Msg = "invalid argument"
+		}
+
 	case "add_category":
 		title := c.GetString("title")
 		if (title != "") {
@@ -147,5 +159,7 @@ func (c *MainController) Get() {
 	}
 
 	c.Data["json"] = &res
+	c.Ctx.Output.Header("Access-Control-Allow-Origin", "*")
+	c.Ctx.Output.Header("Access-Control-Allow-Methods", "GET")
 	c.ServeJSON()
 }
