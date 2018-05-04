@@ -76,6 +76,9 @@ func (c *MainController) Post() {
 	}
 
 	c.Data["json"] = &res
+	c.Ctx.Output.Header("Access-Control-Allow-Origin", "*")
+	c.Ctx.Output.Header("Access-Control-Allow-Methods", "POST")
+	//c.Ctx.Output.Header("Content-Type", "text/html; charset=utf-8")
 	c.ServeJSON()
 }
 
@@ -96,6 +99,7 @@ func (c *MainController) Get() {
 				res.State = true
 				res.Count = num
 				res.CategoryRows = items
+				res.Msg = "更多题目正在录入中，敬请期待"
 			} else {
 				res.State = false
 				res.Msg = err.Error()
@@ -104,7 +108,7 @@ func (c *MainController) Get() {
 			var items []models.Question
 			category_id, err := c.GetInt("category_id")
 			if (err == nil) {
-				num, err := o.Raw("SELECT id,category_id,title FROM question where category_id = ?", category_id).QueryRows(&items)
+				num, err := o.Raw("SELECT id,category_id,title,thumb FROM question where category_id = ?", category_id).QueryRows(&items)
 				if err == nil {
 					res.State = true
 					res.Count = num
