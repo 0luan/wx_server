@@ -83,7 +83,7 @@ func (c *MainController) Get() {
 				res.State = true
 				res.Count = num
 				res.CategoryRows = items
-				res.Msg = "更多题目正在录入中，敬请期待"
+				res.Msg = "更多题目正在录入中，敬请关注"
 			} else {
 				res.State = false
 				res.Msg = err.Error()

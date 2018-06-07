@@ -100,15 +100,16 @@ func (c *ImgUploadController) Post() {
                 res.State = false
                 res.Msg = "invalid img"
             }
-
+	    fmt.Println(data[22:102])
             buffer, err := base64.StdEncoding.DecodeString(data[22:]) // remove "data:image/gif;base64,"
             if (err != nil) {
                 res.State = false
                 res.Msg = err.Error()
             } else {
                 h := sha1.New()
-                h.Sum(buffer)
+                h.Write(buffer)
                 sha1_str := fmt.Sprintf("%x", h.Sum(nil))
+		fmt.Println(sha1_str)     
                 file_name := sha1_str + ext
                 file_path := img_path + file_name
                 res.State = true

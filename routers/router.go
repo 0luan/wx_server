@@ -6,6 +6,6 @@ import (
 )
 
 func init() {
+    beego.Router("/api/imgupload", &controllers.ImgUploadController{})
     beego.Router("/api", &controllers.MainController{})
-    beego.Router("/repository/imgupload", &controllers.ImgUploadController{})
 }
