@@ -2,31 +2,102 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
+    "github.com/astaxie/beego/orm"
+    "proj/models"
 	"crypto/sha1"
     "os"
 	"io"
     "io/ioutil"
 	"fmt"
+    "time"
     "encoding/base64" 
+    //"encoding/json"
 )
+
+type NoteApiController struct {
+	beego.Controller
+}
 
 type ImgUploadController struct {
 	beego.Controller
 }
 
-type Base64ImgUploadController struct {
-	beego.Controller
-}
-
-type UploadRespond struct {
+type ImgUploadRespond struct {
     State bool `json:"state"`
     Sha1 string `json:"sha1"`
     Msg string `json:"msg"`
     Url string `json:"url"`
 }
 
+type NoteApiRespond struct {
+    State bool `json:"state"`
+    Id int64 `json:"id"`
+    Msg string `json:"msg"` 
+}
+
+// func (c *NoteApiController) Get() {
+//     var res NoteApiRespond
+
+//     o := orm.NewOrm()
+//     o.Using("default")
+//     op := c.GetString("op")
+//     switch op {
+//     case "list":
+//         c.Ctx.WriteString(json.Marshal(map[string]interface{}{
+//             "a": this.a,
+//             "b": this.b,
+//             "c": this.c,
+//             "d": this.d,
+//         }))
+//     case "del":
+//     }
+// }
+
+func (c *NoteApiController) Post() {
+    var res NoteApiRespond
+    defer func() {
+        c.Data["json"] = res
+        c.Ctx.Output.Header("Access-Control-Allow-Origin", "*")
+        c.Ctx.Output.Header("Access-Control-Allow-Methods", "POST")
+        c.ServeJSON()  
+    }()
+
+    o := orm.NewOrm()
+    o.Using("default")
+
+    op := c.GetString("op")
+    switch op {
+    case "add":
+        var rec models.Records;
+        content := c.GetString("content")
+        img := c.GetString("img")
+        if (content == "" && img == "") {
+            res.State = false;
+            res.Msg = "invalid arguments";
+            return;
+        }
+
+        rec.Content = content;
+        rec.Images = img;
+        rec.Time = time.Now();
+        id, err := o.Insert(&rec)
+
+        if (err != nil) {
+            res.State = false;
+            res.Msg = err.Error();
+        } else {
+            res.State = true;
+            res.Id = id;
+            res.Msg = "";
+        }
+
+
+    case "del":
+    }
+}
+
 func (c *ImgUploadController) Post() {
-    var res UploadRespond
+    var res ImgUploadRespond
 
     defer func() {
         c.Data["json"] = res
